@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EXPLORANDO EL COSMOS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Poppins&display=swap');
+
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body, html {
+    height: 100%;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    background: #0b0018;
+    color: #eee;
+  }
+
+  #canvas {
+    position: fixed;
+    top:0; left:0; width: 100%; height: 100%;
+    z-index: -1;
+    background: linear-gradient(135deg, #0b0018, #2c003e);
+  }
+
+  #mainContent {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.5s ease;
+  }
+  #mainContent.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #startBtn {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #7928ca, #ff0080);
+    border: none;
+    color: white;
+    padding: 25px 50px;
+    font-size: 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 30px #ff0080aa;
+    transition: box-shadow 0.4s ease;
+    font-family: 'Orbitron', monospace;
+    z-index: 10;
+  }
+  #startBtn:hover {
+    box-shadow: 0 0 50px #ff0080ff;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left:0; width: 100%;
+    background: rgba(15, 0, 40, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+  nav.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  nav .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    color: #ff52ad;
+    letter-spacing: 3px;
+  }
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+  }
+  nav ul li a {
+    text-decoration: none;
+    color: #ccc;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+    cursor: pointer;
+  }
+  nav ul li a:hover {
+    color: #ff52ad;
+  }
+
+  section {
+    min-height: 100vh;
+    padding: 100px 8% 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 1s ease;
+  }
+  section.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  h1, h2 {
+    font-family: 'Orbitron', monospace;
+    color: #ff52ad;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px #ff52adaa;
+  }
+  h1 {
+    font-size: 3.8rem;
+    letter-spacing: 5px;
+  }
+  h2 {
+    font-size: 2.8rem;
+    margin-bottom: 40px;
+  }
+
+  p {
+    font-size: 1.3rem;
+    max-width: 800px;
+    margin: 0 auto 30px;
+    text-align: center;
+    line-height: 1.5;
+    color: #ddd;
+    text-shadow: 0 0 8px #88004433;
+  }
+
+  .btn {
+    display: block;
+    margin: 20px auto 0;
+    padding: 15px 45px;
+    font-size: 1.3rem;
+    border-radius: 35px;
+    border: none;
+    background: linear-gradient(135deg, #ff0080, #7928ca);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 0 25px #ff0080bb;
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+    font-family: 'Orbitron', monospace;
+  }
+  .btn:hover {
+    background: linear-gradient(135deg, #ff4cae, #a156e9);
+    box-shadow: 0 0 40px #ff4caeff;
+    transform: translateY(-4px);
+  }
+
+  .astroquimica-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+  }
+  .card {
+    background: linear-gradient(135deg, #2b003d, #62007f);
+    box-shadow: 0 0 20px #8a00b3;
+    padding: 25px 30px;
+    border-radius: 20px;
+    width: 280px;
+    color: #f5daf7;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 0 40px #ff52ad;
+  }
+  .card h3 {
+    font-family: 'Orbitron', monospace;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #ff52ad;
+  }
+  .card p {
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+
+  footer {
+    padding: 20px;
+    background: #0c0027;
+    color: #555;
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: 1.2px;
+    font-family: 'Orbitron', monospace;
+    text-shadow: 0 0 10px #44003333;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media(max-width: 720px) {
+    h1 {
+      font-size: 2.8rem;
+    }
+    h2 {
+      font-size: 2.2rem;
+    }
+    .card {
+      width: 100%;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<button id="startBtn">EMPEZAR EXPERIENCIA</button>
+
+<nav id="navbar">
+  <div class="logo">EXPLORANDO EL COSMOS</div>
+  <ul>
+    <li><a href="#universo" class="nav-link">Universo</a></li>
+    <li><a href="#astroquimica" class="nav-link">Astroquímica</a></li>
+    <li><a href="#footer" class="nav-link">Contacto</a></li>
+  </ul>
+</nav>
+
+<div id="mainContent">
+  <section id="hero" class="active">
+    <h1>Bienvenido al Universo</h1>
+    <p>Un viaje fascinante a través del espacio, las estrellas y la química que forma la vida misma.</p>
+    <button class="btn" id="toUniversoBtn">Descubre el Universo</button>
+  </section>
+
+  <section id="universo">
+    <h2>El Universo</h2>
+    <p>El universo es el vasto conjunto de todo lo que existe: espacio, tiempo, materia y energía. Se extiende más allá de lo que podemos imaginar, abarcando galaxias, estrellas, planetas y toda la materia que conforma nuestro entorno.</p>
+
+    <p>El universo tiene muchas partes fundamentales:</p>
+
+    <p><strong>El Big Bang:</strong> Es la teoría que explica el origen del universo hace aproximadamente 13.8 mil millones de años, cuando toda la materia y energía comenzaron a expandirse desde un punto extremadamente caliente y denso.</p>
+
+    <p><strong>Las estrellas:</strong> Son enormes bolas de gas que emiten luz y calor debido a reacciones nucleares en su interior. Son los motores que iluminan el universo y crean elementos químicos esenciales.</p>
+
+    <p><strong>Los planetas:</strong> Son cuerpos que orbitan estrellas y pueden tener características muy diversas, desde gigantes gaseosos hasta mundos rocosos como la Tierra.</p>
+
+    <p><strong>Galaxias:</strong> Son agrupaciones masivas de estrellas, gas, polvo y materia oscura, formando estructuras enormes que pueblan el cosmos.</p>
+
+    <p><strong>Agujeros negros:</strong> Son regiones del espacio con una gravedad tan fuerte que nada, ni siquiera la luz, puede escapar de ellas.</p>
+
+    <p>Desde los cúmulos estelares hasta las vastas estructuras cósmicas, el universo nos invita a explorar sus misterios sin fin.</p>
+
+    <button class="btn" id="toAstroBtn">Saber más de Astroquímica</button>
+  </section>
+
+  <section id="astroquimica">
+    <h2>Astroquímica</h2>
+    <div class="astroquimica-cards">
+      <div class="card">
+        <h3>Moléculas en el Espacio</h3>
+        <p>La astroquímica estudia las moléculas formadas en el espacio interestelar, muchas de ellas esenciales para la vida.</p>
+      </div>
+      <div class="card">
+        <h3>Nebulosas y Gas</h3>
+        <p>Las nebulosas son los laboratorios químicos naturales donde se forman nuevas estrellas y compuestos complejos.</p>
+      </div>
+      <div class="card">
+        <h3>Orígenes Cósmicos</h3>
+        <p>Comprender la astroquímica ayuda a explicar cómo surgieron los elementos que forman nuestro planeta y organismos.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    © 2025 - Creado por los Pica Piedras (Rene el mejor, Alejandro, Nayette, Daniela y Boca Chula) - Explora el cosmos con los picapiedras.
+  </footer>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  let particles = [];
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+  }
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.radius = Math.random() * 1.4 + 0.7;
+      this.color = `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.3})`;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.x < 0) this.x = W;
+      if (this.x > W) this.x = 0;
+      if (this.y < 0) this.y = H;
+      if (this.y > H) this.y = 0;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 8;
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    particles = [];
+    let count = Math.floor(W * H / 6000);
+    for (let i=0; i<count; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    initParticles();
+  });
+
+  resize();
+  initParticles();
+  animate();
+
+  const startBtn = document.getElementById('startBtn');
+  const mainContent = document.getElementById('mainContent');
+  const navbar = document.querySelector('nav');
+  const sections = document.querySelectorAll('section');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  startBtn.addEventListener('click', () => {
+    startBtn.style.display = 'none';
+    mainContent.classList.add('active');
+    navbar.classList.add('active');
+    sections.forEach(section => section.classList.add('active'));
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  function revealSections() {
+    const triggerBottom = window.innerHeight * 0.8;
+    sections.forEach(section => {
+      const sectionTop = section.getBoundingClientRect().top;
+      if(sectionTop < triggerBottom) {
+        section.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', revealSections);
+  window.addEventListener('load', revealSections);
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      target.classList.add('active');
+      target.scrollIntoView({behavior: 'smooth'});
+    });
+  });
+
+  document.getElementById('toUniversoBtn').addEventListener('click', () => {
+    const universoSection = document.getElementById('universo');
+    universoSection.classList.add('active');
+    universoSection.scrollIntoView({behavior: 'smooth'});
+  });
+  document.getElementById('toAstroBtn').addEventListener('click', () => {
+    const astroSection = document.getElementById('astroquimica');
+    astroSection.classList.add('active');
+    astroSection.scrollIntoView({behavior: 'smooth'});
+  });
+</script>
+
+</body>
+</html>
